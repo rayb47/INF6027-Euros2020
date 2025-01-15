@@ -414,6 +414,7 @@ All the metric values here are averages (per game) and only for the top 8 teams 
 ![Boxplot](https://github.com/user-attachments/assets/e9229a26-8c8e-4d63-8e84-ffd8bee33b51)
 
 The output of the statistical tests (Mann Whitney Test, Welch's t-tests) conducted for this research question will look like this in the R console,
+
 ![image](https://github.com/user-attachments/assets/712ea251-49fe-4af7-88e4-8dd5ecfa8fa4)
 
 
