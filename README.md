@@ -440,6 +440,9 @@ All metric values here are averages (per-game) for all the teams in tournaments,
 ### Passing Accuracy vs Attempted Passes
 ![Cluster3](https://github.com/user-attachments/assets/bf3597f5-00bc-4e45-a4a8-db907be0db68)
 
+## INF4000 Project
+The link to the project page for INF4000 is https://rayb47.github.io/INF4000_Euros2020/
+
 
 
 
