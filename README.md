@@ -1,13 +1,23 @@
 # INF6027-Euros2020
 
+## Profile
+- A result-oriented and driven IT individual with a passion for developing innovative software solutions.
+- A proficient programmer with work experience in coding and testing, software design and development.
+
+## Skills
+- Technical: Python, JavaScript, HTML, R, SQL, PowerBI, Java
+- Core: Problem Solving, Time Management, Team Collaboratiion, Critical Thinking
+
+## Project Description
+
 This project analyzes football tournament data (from the 2020 Euros) to address 3 main proposed research questions,
 1. What are the differences in statistics between the group stage and knockout stage for different teams?
 2. Do attacking or defensive metrics play a more critical role in determining whether a team qualifies for the knockout stage?
 3. Can team performances throughout the tournament be clustered into distinct groups based on various performance metrics?
 
 The code for this project is well-documented and neatly organized to ensure clarity and reproducibility. The scripts are well-indented with appropriate comments to explain the steps of the analysis. All the code is divided into 2 files,
-1. main.R - This file handles the processing of data, computation of metrics and the entire analysis
-2. functions.R - This files contains all the user-created functions that are necessary to carry out the required analysis. This file does not need to be visited, as it is executed through main.R.
+1. main.R - This file handles the processing of data, computation of metrics and the entire analysis.
+2. functions.R - This files contains all the user-created functions that are necessary to carry out the required analysis. This file does not need to be visited, as it is executed through `main.R`.
 
 
 ## Steps to Execute the Code
