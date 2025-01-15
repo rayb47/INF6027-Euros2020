@@ -1,29 +1,27 @@
-install.packages("ggtext")
+source("functions.R")
 
-source("Functions.R")
+# Lists out the required libraries
+required_libraries <- c(
+  "dplyr", "ggplot2", "ggrepel", "tibble", "tidyr", 
+  "reshape2", "randomForest", "corrplot", "factoextra", 
+  "stringr", "ggtext"
+)
 
-# Loads libraries
-library(ggrepel)
-library(dplyr)
-library(tibble)
-library(tidyr)
-library(ggplot2)
-library(reshape2)
-library(randomForest)
-library(corrplot)
-library(factoextra)
-library(stringr)
+# Check and install missing libraries
+install_if_missing(required_libraries)
+
+# Load all libraries
+load_libraries(required_libraries)
 
 # Loads data from CSV files
 match_events <- read.csv("Match events.csv")
-match_lineups <- read.csv("Match line-ups.csv")
 match_information <- read.csv("Match information.csv")
 match_team_statistics <- read.csv("Match team statistics.csv")
-match_player_statistics <- read.csv("Match player statistics.csv")
-pre_match_information <- read.csv("Pre-match information.csv")
 
-sapply(match_team_statistics, function(x) sum(is.na(x)))
+# Checks for missing values in all dataset files
+sapply(match_events, function(x) sum(is.na(x)))
 sapply(match_information, function(x) sum(is.na(x)))
+sapply(match_team_statistics, function(x) sum(is.na(x)))
 
 # Gets Team Names and IDs of participating teams
 unique_teams <- match_team_statistics %>%
@@ -53,40 +51,6 @@ match_data <- group_stage_matches %>%
       ScoreHome == ScoreAway ~ "Draw"
     )
   )
-
-# Function to aggregate stats for home or away teams
-aggregate_team_stats <- function(data, team_type, is_knockout = FALSE) {
-  if (team_type == "Home") {
-    team_stats <- data %>%
-      # group_by(TeamName = HomeTeamName) %>%
-      group_by(HomeTeamName) %>%
-      summarize(
-        Wins = if (!is_knockout) sum(ScoreHome > ScoreAway, na.rm = TRUE) else
-          sum(Winner == "Home", na.rm = TRUE),
-        Losses = if (!is_knockout) sum(ScoreHome < ScoreAway, na.rm = TRUE) else
-          sum(Winner == "Away", na.rm = TRUE),
-        Draws = if (!is_knockout) sum(ScoreHome == ScoreAway, na.rm = TRUE) else NULL,
-        # GoalsScored = sum(ScoreHome, na.rm = TRUE),
-        .groups = "drop"
-      )
-  } else if (team_type == "Away") {
-    team_stats <- data %>%
-      group_by(AwayTeamName) %>%
-      summarize(
-        Wins = if (!is_knockout) sum(ScoreHome < ScoreAway, na.rm = TRUE) else
-          sum(Winner == "Away", na.rm = TRUE),
-        Losses = if (!is_knockout) sum(ScoreHome > ScoreAway, na.rm = TRUE) else
-          sum(Winner == "Home", na.rm = TRUE),
-        Draws = if (!is_knockout) sum(ScoreHome == ScoreAway, na.rm = TRUE) else NULL,
-        # GoalsScored = sum(ScoreAway, na.rm = TRUE),
-        .groups = "drop"
-      )
-  } else {
-    stop("Invalid team_type. Use 'Home' or 'Away'.")
-  }
-  
-  return(team_stats)
-}
 
 # Creates Table with Match Result Stats for each team (for their home & away fixtures)
 group_home_stats <- aggregate_team_stats(match_data, "Home")
@@ -175,18 +139,12 @@ final_knockout_stats <- knockout_team_stats %>%
   left_join(unique_teams, by = c("Team" = "TeamName")) %>%
   relocate(TeamID, .before = Team)
 
-View(final_knockout_stats)
-
-# Define stats of interest
+# Define stats of interest (Note: Typos in the strings below are intended, to match the metric names in the dataset)
 stats_of_interest <- c(
   "Goals", "Goals conceded", "Ball Possession", "Corners", "Total Attempts", "Attempts on target", 
   "Tackles won", "Clearances", "Recovered balls", "Fouls committed",
   "Passes completed", "Passes accuracy", "Attempts Accuracy", "Blocks",
   "Lost balls", "Big Chances", "Instance of possession ", "Change of possession",
-  "Goals scored in open play", "Goals scored on direct free-kcik", "Goals scored on indirect free-kcik", 
-  "Goals scored on penalty ", "Goals on corner ", "Own-goals",
-  "Goals conceded from open play ", "Goals conceded from set pieces", 
-  "Goals conceded in penalty area", "Goals conceded outside penalty area",
   "Yellow cards", "Total Attacks"
 )
 
@@ -204,24 +162,10 @@ detailed_match_team_stats <- match_team_statistics %>%
     across(all_of(numeric_columns), ~ replace_na(.x, 0))
   )
 
-# Define groups of columns
-sum_columns <- c(
-  "Goals", "Own-goals", "Corners", "Blocks", "Goals scored in open play", 
-  "Goals scored on penalty ", "Goals scored on indirect free-kcik", 
-  "Goals scored on direct free-kcik", "Goals on corner ", "Goals conceded", 
-  "Goals conceded from open play ", "Goals conceded from set pieces", 
-  "Goals conceded in penalty area", "Goals conceded outside penalty area", 
-  "Passes completed", "Passes accuracy", "Ball Possession", "Total Attempts", 
-  "Attempts Accuracy", "Lost balls", "Attempts on target", "Tackles won", 
-  "Clearances", "Recovered balls", "Fouls committed", "Yellow cards", 
-  "Total Attacks", "Big Chances", "Instance of possession ", 
-  "Change of possession"
-)
-
 # Summarize match statistics
 detailed_match_team_stats <- detailed_match_team_stats %>%
   group_by(MatchID, TeamName) %>%
-  summarize(across(all_of(sum_columns), ~ sum(.x, na.rm = TRUE), .names = "{.col}"), .groups = "drop") %>%
+  summarize(across(all_of(numeric_columns), ~ sum(.x, na.rm = TRUE), .names = "{.col}"), .groups = "drop") %>%
   left_join(
     detailed_match_team_stats %>%
       select(MatchID, HomeTeamName.x, AwayTeamName.x, RoundName, Stage) %>%
@@ -229,23 +173,13 @@ detailed_match_team_stats <- detailed_match_team_stats %>%
     by = "MatchID"
   )
 
-View(detailed_match_team_stats)
-
-# Define average and specific calculations
-avg_columns <- c(
-  "Goals", "Blocks", "Total Attempts", "Attempts Accuracy", "Passes completed", 
-  "Passes accuracy", "Ball Possession", "Total Attacks", "Lost balls", 
-  "Tackles won", "Recovered balls", "Fouls committed", "Clearances", 
-  "Yellow cards", "Goals conceded"
-)
-
 # Summarize team tournament stats
 team_tournament_stats <- detailed_match_team_stats %>%
   group_by(TeamName) %>%
   summarize(
     # Compute averages for listed columns
     across(
-      all_of(avg_columns), 
+      all_of(numeric_columns), 
       ~ mean(.x, na.rm = TRUE), 
       .names = "{str_replace_all(.col, ' ', '')}"
     ),
@@ -253,10 +187,6 @@ team_tournament_stats <- detailed_match_team_stats %>%
     avg_fouls_per_yellow_card = ifelse(mean(`Yellow cards`, na.rm = TRUE) == 0, NA, mean(`Fouls committed`, na.rm = TRUE) / mean(`Yellow cards`, na.rm = TRUE)),
     avg_inst_poss = mean(`Instance of possession `, na.rm = TRUE),
     avg_change_poss = mean(`Change of possession`, na.rm = TRUE),
-    # c_open_play_goals = sum(`Goals conceded from open play `, na.rm = TRUE),
-    # c_set_piece_goals = sum(`Goals conceded from set pieces`, na.rm = TRUE),
-    # c_pen_area_goals = sum(`Goals conceded in penalty area`, na.rm = TRUE),
-    # c_outside_pen_area_goals = sum(`Goals conceded outside penalty area`, na.rm = TRUE),
     .groups = "drop"
   )
 
@@ -269,17 +199,17 @@ knockout_stage_metrics <- calculate_stagewise_metrics(detailed_match_team_stats,
 View(knockout_stage_metrics)
 
 # Top 8 Teams in the Tournament
-qualified_teams <- c("Belgium", "Italy", "Switzerland", "Spain", "England", "Ukraine", "Czech Republic", "Denmark")
+top_8_teams <- c("Belgium", "Italy", "Switzerland", "Spain", "England", "Ukraine", "Czech Republic", "Denmark")
 
 # Fetches stage-wise statistics for the top 8 teams in the tournament
 group_stage_filtered <- group_stage_metrics %>%
-  filter(TeamName %in% qualified_teams) %>%
+  filter(TeamName %in% top_8_teams) %>%
   mutate(Stage = "Group Stage")
 knockout_stage_filtered <- knockout_stage_metrics %>%
-  filter(TeamName %in% qualified_teams) %>%
+  filter(TeamName %in% top_8_teams) %>%
   mutate(Stage = "Knockout Stage")
 
-# -------- RESEARCH QUESTIOn 1 ------------------
+# -------- RESEARCH QUESTION 1 ------------------
 
 # Combines the stage-wise statistics
 comparison_data <- bind_rows(group_stage_filtered, knockout_stage_filtered)
@@ -289,18 +219,17 @@ comparison_data_long <- comparison_data %>%
   select(TeamName, Stage, avg_goals, avg_possession, avg_goals_conceded, avg_total_attempts, avg_tackles, avg_fouls, avg_fouls_per_yellow_card) %>%
   pivot_longer(cols = starts_with("avg_"), names_to = "Metric", values_to = "Value")
 
-# Plots bar chart for comparison
-plot_stage_comparison(comparison_data_long, "avg_possession")
-plot_stage_comparison(comparison_data_long, "avg_fouls")
-
-# Plot for "avg_goals" with connecting lines
+# Plot for "avg_goals" and "avg_goals_conceded"  with connecting lines
 plot_stage_comparison_scatter(comparison_data_long, "avg_goals")
 plot_stage_comparison_scatter(comparison_data_long, "avg_goals_conceded")
 
-# Perform t-tests for key statistics between stages
-filtered_data <- detailed_match_team_stats %>%
-  filter(TeamName == "Italy")
-# Filters out all the teams outside the top 8
+# Plots bar chart for comparison
+plot_stage_comparison(comparison_data_long, "avg_possession", "Stage-wise Comparison for Average Possession per Game")
+
+# Plots a heat map for fouls committed comparison
+create_heatmap(comparison_data, metric = "avg_fouls", title = "Fouls Committed per Game (Top 8 Teams)")
+
+# Filters data only for the knockout teams
 filtered_knockout_team_data <- detailed_match_team_stats %>%
   filter(TeamName %in% final_knockout_stats$Team)
 
@@ -360,7 +289,6 @@ attacking_feature_importance <- data.frame(
   Importance = importance(rf_model_attacking)[, 1],
   Category = "Attacking"
 )
-
 defensive_feature_importance <- data.frame(
   Metric = rownames(importance(rf_model_defensive)),
   Importance = importance(rf_model_defensive)[, 1],
@@ -372,11 +300,9 @@ feature_importance_combined <- rbind(attacking_feature_importance, defensive_fea
 
 # Plots feature importance bar chart
 plot_feature_importance(feature_importance_combined)
-# ------------- END OF RESEARCH QUESTIOn 2 ----------------
+# ------------- END OF RESEARCH QUESTION 2 ----------------
 
-View(team_tournament_stats)
 # --------- RESEARCH QUESTIOn 3 -----------------
-
 # Scaling tournament stats to create clusters
 team_tournament_stats_scaled <- scale(team_tournament_stats[, -1])
 fviz_nbclust(team_tournament_stats_scaled, kmeans, method = "wss")
@@ -384,98 +310,33 @@ set.seed(123)
 kmeans_result <- kmeans(team_tournament_stats_scaled, centers = 3)  # 3 clusters
 team_tournament_stats$Cluster <- kmeans_result$cluster
 
+# Plots of  the required clusters
 plot_team_clusters_split(
   data = team_tournament_stats,
   x_var = "BallPossession", 
   y_var = "Goals",
-  x_label = "Possession Maintained per Game", 
-  y_label = "Goals per Game",
-  plot_title = "Team Clusters Based on Performance Metrics with Quadrants"
+  x_label = "Possession Maintained (per game)", 
+  y_label = "Goals (per game)",
+  plot_title = "Possession Maintained vs Goals (Teams with black labels qualified for the knockout stage)",
+  black_labels = final_knockout_stats$Team
 )
 
 plot_team_clusters_split(
   data = team_tournament_stats,
-  x_var = "TotalAttempts", 
-  y_var = "TotalAttacks",
-  x_label = "Attempts / Game", 
-  y_label = "Attacks / Game",
-  plot_title = "Performance Metrics Clusters with Quadrants (split on the Median)",
-  highlight_teams = final_knockout_stats$Team
+  x_var = "TotalAttacks", 
+  y_var = "TotalAttempts",
+  x_label = "Attacks (per game)", 
+  y_label = "Attempts on Goal (per game)",
+  plot_title = "Attacks vs Attempts on Goal (Teams with black labels qualified for the knockout stage)",
+  black_labels = final_knockout_stats$Team
 )
 
 plot_team_clusters_split(
   data = team_tournament_stats,
-  x_var = "Goalsconceded", 
-  y_var = "Goals",
-  x_label = "Goals Conceded", 
-  y_label = "Clearances",
-  plot_title = "Performance Metrics Clusters with Quadrants (split on the Median)"
+  x_var = "Passesaccuracy", 
+  y_var = "Passescompleted",
+  x_label = "Passing Accuracy (per game)", 
+  y_label = "Passes Attempted (per game)",
+  plot_title = "Passing Accuracy vs Passes Attempted (Teams with black labels qualified for the knockout stage)",
+  black_labels = final_knockout_stats$Team
 )
-
-View(team_tournament_stats)
-
-plot_team_clusters_split(
-  data = team_tournament_stats,
-  x_var = "Passescompleted", 
-  y_var = "Passesaccuracy",
-  x_label = "Passes per Game", 
-  y_label = "Passing Accuracy (%)",
-  plot_title = "Performance Metrics Clusters with Quadrants (split on the Median)"
-)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# # Getting features to compute feature importance
-# features <- group_stage_metrics_with_qual %>%
-#   select(avg_possession, avg_total_attempts, avg_total_attacks, avg_goals, avg_attempts_acc,
-#          avg_tackles, avg_recoveries, avg_clearances, avg_blocks, avg_goals_conceded)
-# 
-# # Runs Random Forest Model
-# rf_model <- randomForest(x = features, y = as.factor(group_stage_metrics_with_qual$Qualified), importance = TRUE)
-# importance(rf_model)
-# 
-# # Stores metrics and their respective importances
-# feature_importance <- data.frame(
-#   Metric = rownames(importance(rf_model)),
-#   Importance = importance(rf_model)[, 1]
-# )
-# 
-# # Plots feature importance chart
-# ggplot(feature_importance, aes(x = reorder(Metric, Importance), y = Importance)) +
-#   geom_bar(stat = "identity", fill = "steelblue") +
-#   geom_text(aes(label = round(Importance, 2)), 
-#             hjust = -0.2,  # Position the labels slightly outside the bars
-#             size = 3) + 
-#   coord_flip() +
-#   labs(
-#     title = "Feature Importance",
-#     x = "Metrics",
-#     y = "Importance"
-#   ) +
-#   theme_minimal() +
-#   theme(plot.title = element_text(hjust = 0.5))  # Center align the title
-
-
-
-
-
-
