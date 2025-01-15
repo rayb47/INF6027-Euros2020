@@ -23,7 +23,7 @@ The code for this project is well-documented and neatly organized to ensure clar
 ## Steps to Execute the Code
 1. Clone the contents of the repository to your local machine.
    
-   ```git clone https://github.com/yourusername/your-repo-name.git```
+   ```git clone https://github.com/rayb47/INF6027-Euros2020.git```
 2. Open R or RStudio and set the working directory to the cloned repository
 
    ```setwd("path/to/your-repo-name")```
