@@ -1,5 +1,7 @@
 # INF6027-Euros2020
 
+Repository Link: https://github.com/rayb47/INF6027-Euros2020/tree/main
+
 ## Profile
 - A result-oriented and driven IT individual with a passion for developing innovative software solutions.
 - A proficient programmer with work experience in coding and testing, software design and development.
