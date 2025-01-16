@@ -362,40 +362,7 @@ plot_correlation_analysis <- function(data, title = "Metric Correlation with Qua
     )
 }
 
-# Plots a scatter-plot of clusters of teams for a 2D comparison of metrics between all the teams
-plot_team_clusters_split <- function(data, x_var, y_var, x_label, y_label, plot_title) {
-  # Calculate midpoints for the x and y axes
-  x_midpoint <- median(data[[x_var]], na.rm = TRUE)  # Calculate median for x-axis
-  y_midpoint <- median(data[[y_var]], na.rm = TRUE)  # Calculate median for y-axis
-  
-  ggplot(data, aes_string(x = x_var, y = y_var, color = "as.factor(Cluster)")) +
-    
-    # Adds colored backgrounds for each quadrant
-    annotate("rect", xmin = -Inf, xmax = x_midpoint, ymin = y_midpoint, ymax = Inf, fill = "lightyellow", alpha = 0.2) +  # Top left
-    annotate("rect", xmin = x_midpoint, xmax = Inf, ymin = y_midpoint, ymax = Inf, fill = "lightgreen", alpha = 0.2) +  # Top right
-    annotate("rect", xmin = -Inf, xmax = x_midpoint, ymin = -Inf, ymax = y_midpoint, fill = "lightpink", alpha = 0.2) +  # Bottom left
-    annotate("rect", xmin = x_midpoint, xmax = Inf, ymin = -Inf, ymax = y_midpoint, fill = "lightyellow", alpha = 0.2) +  # Bottom right
-    
-    # Add points and labels
-    geom_point(size = 3) +
-    geom_text_repel(aes(label = TeamName), size = 3) +
-    
-    # Add dashed lines for quadrants
-    geom_vline(xintercept = x_midpoint, linetype = "dashed", color = "gray") +
-    geom_hline(yintercept = y_midpoint, linetype = "dashed", color = "gray") +
-    
-    # Add labels and theme
-    labs(
-      title = plot_title,
-      x = x_label,
-      y = y_label,
-      color = "Cluster"
-    ) +
-    theme_minimal() +
-    theme(axis.text.x = element_text(face = "bold"))
-}
-
-
+# FUNCTION to plot a clusters of teams for a 2D comparison of metrics between all the teams
 plot_team_clusters_split <- function(data, x_var, y_var, x_label, y_label, plot_title, black_labels = NULL) {
   # Add a column to specify label color for specific teams
   data <- data %>%
@@ -467,10 +434,10 @@ create_heatmap <- function(data, metric, title = "Heatmap of Metric by Stage and
     ) +
     theme_minimal() +
     theme(
-      axis.text.x = element_text(angle = 45, hjust = 1, face = "bold"),  # Bold x-axis text
-      axis.text.y = element_text(size = 10, face = "bold"),  # Bold y-axis text
-      axis.title.x = element_text(face = "bold"),  # Bold x-axis label
-      axis.title.y = element_text(face = "bold"),  # Bold y-axis label
+      axis.text.x = element_text(angle = 45, hjust = 1, face = "bold"),
+      axis.text.y = element_text(size = 10, face = "bold"), 
+      axis.title.x = element_text(face = "bold"),  
+      axis.title.y = element_text(face = "bold"),  
       plot.title = element_text(hjust = 0.5, face = "bold", size = 14)
     )
 }
