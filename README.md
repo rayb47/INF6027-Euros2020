@@ -15,7 +15,7 @@ Repository Link: https://github.com/rayb47/INF6027-Euros2020/tree/main
 This project analyzes football tournament data (from the 2020 Euros) to address 3 main proposed research questions,
 1. What are the differences in statistics between the group stage and knockout stage for different teams?
 2. Do attacking or defensive metrics play a more critical role in determining whether a team qualifies for the knockout stage?
-3. Can team performances throughout the tournament be clustered into distinct groups based on various performance metrics?
+3. Can clustering teams based on performance metrics be used as an indicator of overall tournament success?
 
 The code for this project is well-documented and neatly organized to ensure clarity and reproducibility. The scripts are well-indented with appropriate comments to explain the steps of the analysis. All the code is divided into 2 files,
 1. main.R - This file handles the processing of data, computation of metrics and the entire analysis.
@@ -405,7 +405,7 @@ plot_team_clusters_split(
 
   
 ## Generated Visualizations
-Once you have finished running the main.R file, you would have seen the following visualizations (in order of generation in the code).
+Once you have finished running the `main.R` file, you would have seen the following visualizations (in order of generation in the code).
 
 ### Research Question 1
 All the metric values here are averages (per game) and only for the top 8 teams in the tournament. That is, the 8 teams that made it to the quarter finals.
