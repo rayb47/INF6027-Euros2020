@@ -412,7 +412,7 @@ plot_team_clusters_split <- function(data, x_var, y_var, x_label, y_label, plot_
     annotate("rect", xmin = -Inf, xmax = x_midpoint, ymin = y_midpoint, ymax = Inf, fill = "lightblue", alpha = 0.2) +  # Top left
     annotate("rect", xmin = x_midpoint, xmax = Inf, ymin = y_midpoint, ymax = Inf, fill = "lightgreen", alpha = 0.2) +  # Top right
     annotate("rect", xmin = -Inf, xmax = x_midpoint, ymin = -Inf, ymax = y_midpoint, fill = "lightpink", alpha = 0.2) +  # Bottom left
-    annotate("rect", xmin = x_midpoint, xmax = Inf, ymin = -Inf, ymax = y_midpoint, fill = "lightyellow", alpha = 0.2) +  # Bottom right
+    annotate("rect", xmin = x_midpoint, xmax = Inf, ymin = -Inf, ymax = y_midpoint, fill = "lightblue", alpha = 0.2) +  # Bottom right
     
     # Add points
     geom_point(size = 3) +
